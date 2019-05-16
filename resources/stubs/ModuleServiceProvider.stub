@@ -1,0 +1,29 @@
+<?php
+
+namespace $NAMESPACE;
+
+use Illuminate\Support\ServiceProvider;
+
+class ModuleServiceProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', '$MODULE_NAME');
+        $this->loadViewsFrom(__DIR__ . '/../Resources/Views', '$MODULE_NAME');
+    }
+
+    /**
+     * Register services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        $this->app->register(RouteServiceProvider::class);
+    }
+}

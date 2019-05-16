@@ -1,0 +1,77 @@
+# config.
+version: "3"
+
+# volumes.
+volumes:
+  # MySQL Data.
+  mysql-data:
+  # Redis Data.
+  redis-data:
+  # .config.
+  dot-config:
+  # .local.
+  dot-local:
+  # .cache.
+  dot-cache:
+  # .composer.
+  dot-composer:
+
+# services.
+services:
+  # MySQL.
+  mysql:
+    image: mysql:5.7
+    container_name: laravel-mysql
+    restart: unless-stopped
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=laravel
+      - MYSQL_DATABASE=laravel
+      - MYSQL_USER=laravel
+      - MYSQL_PASSWORD=laravel
+
+  # Redis.
+  cache:
+    image: redis:4.0-alpine
+    container_name: laravel-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    ports:
+      - 6379:6379
+
+  # API.
+  api:
+    image: ambientum/php:7.2-nginx
+    container_name: laravel-api
+    restart: unless-stopped
+    environment:
+      - XDEBUG_ENABLED=true
+      - PHP_IDE_CONFIG=serverName=ambientum
+    volumes:
+      - .:/var/www/app
+      - dot-config:/home/ambientum/.config
+      - dot-cache:/home/ambientum/.cache
+      - dot-local:/home/ambientum/.local
+      - dot-composer:/home/ambientum/.composer
+    ports:
+      - 80:8080
+      - 443:8083
+    links:
+      - mysql
+      - cache
+
+  # QUEUE
+  queue:
+    image: ambientum/php:7.2
+    container_name: laravel-queue
+    command: php artisan horizon
+    volumes:
+      - .:/var/www/app
+    restart: unless-stopped
+    links:
+      - mysql
+      - cache
